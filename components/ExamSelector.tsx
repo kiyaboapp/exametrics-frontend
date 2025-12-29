@@ -46,20 +46,26 @@ export default function ExamSelector() {
 
   return (
     <Select value={selectedExam?.exam_id || ''} onValueChange={handleExamChange}>
-      <SelectTrigger className="w-full max-w-xs">
+      <SelectTrigger className="w-full max-w-xs text-sm">
         <SelectValue placeholder="Select an exam" />
       </SelectTrigger>
-      <SelectContent>
-        {exams.map((exam) => (
-          <SelectItem key={exam.exam_id} value={exam.exam_id}>
-            <div className="flex flex-col">
-              <span className="font-medium">{exam.exam_name}</span>
-              <span className="text-xs text-gray-500">
-                {formatDate(exam.start_date)} - {formatDate(exam.end_date)}
-              </span>
-            </div>
-          </SelectItem>
-        ))}
+      <SelectContent className="max-h-[300px]">
+        {exams.length === 0 ? (
+          <div className="px-2 py-6 text-center text-sm text-muted-foreground">
+            No exams available
+          </div>
+        ) : (
+          exams.map((exam) => (
+            <SelectItem key={exam.exam_id} value={exam.exam_id} className="py-2">
+              <div className="flex flex-col">
+                <span className="font-medium text-sm">{exam.exam_name}</span>
+                <span className="text-xs text-muted-foreground">
+                  {formatDate(exam.start_date)} - {formatDate(exam.end_date)}
+                </span>
+              </div>
+            </SelectItem>
+          ))
+        )}
       </SelectContent>
     </Select>
   );

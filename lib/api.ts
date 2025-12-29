@@ -196,8 +196,8 @@ export const getExamRegistrationStats = async (examId: string) => {
 // Results APIs
 export const getSchoolAnalysis = async (examId: string, centreNumber: string, simplified = false) => {
   const endpoint = simplified 
-    ? `/school-analyses/exams/${examId}/schools/${centreNumber}/analysis/overview`
-    : `/school-analyses/exams/${examId}/schools/${centreNumber}/analysis/full`;
+    ? `/exams/${examId}/schools/${centreNumber}/analysis/overview`
+    : `/exams/${examId}/schools/${centreNumber}/analysis/full`;
   const response = await api.get(endpoint);
   return response.data;
 };
@@ -315,6 +315,221 @@ export const reprocessExam = async (examId: string) => {
 // Get available examination boards
 export const getBoards = async () => {
   const response = await api.get('/exam-boards');
+  return response.data;
+};
+
+// Create exam board
+export const createBoard = async (boardData: { board_name: string; board_code?: string }) => {
+  const response = await api.post('/exam-boards/', boardData);
+  return response.data;
+};
+
+// ===== RESULTS PROCESSING APIs =====
+
+// Complete Results Processing
+export const completeResultsProcessing = async (examId: string, params?: any) => {
+  const response = await api.get(`/results/results/complete/${examId}`, { params });
+  return response.data;
+};
+
+// Update School Progress
+export const updateSchoolProgress = async (examId: string) => {
+  const response = await api.post(`/results/progress/update/${examId}`);
+  return response.data;
+};
+
+// Get School Progress
+export const getSchoolProgress = async (examId: string, centreNumber?: string) => {
+  const params: any = {};
+  if (centreNumber) params.centre_number = centreNumber;
+  const response = await api.get(`/results/progress/${examId}`, { params });
+  return response.data;
+};
+
+// Generate School Results PDF
+export const generateSchoolPDF = async (examId: string, centreNumber: string) => {
+  const response = await api.get(`/results/results/pdf/${examId}/${centreNumber}`, {
+    responseType: 'blob'
+  });
+  return response.data;
+};
+
+// Generate Multiple School Results PDFs (ZIP)
+export const generateBulkPDFs = async (examId: string, params?: any) => {
+  const response = await api.get(`/results/pdf/zip/${examId}`, {
+    params,
+    responseType: 'blob'
+  });
+  return response.data;
+};
+
+// Save All Exam Documents
+export const saveAllExamDocuments = async (examId: string, params?: any) => {
+  const response = await api.get(`/results/save/docs/${examId}`, { params });
+  return response.data;
+};
+
+// Download Raw Data
+export const downloadRawData = async (params?: any) => {
+  const response = await api.get('/results/download/rawdata', {
+    params,
+    responseType: 'blob'
+  });
+  return response.data;
+};
+
+// Download School Subject Statistics
+export const downloadSchoolSubjectStats = async (params?: any) => {
+  const response = await api.get('/results/download/school-subject-stats', {
+    params,
+    responseType: 'blob'
+  });
+  return response.data;
+};
+
+// Download School Summary Statistics
+export const downloadSchoolSummaryStats = async (params?: any) => {
+  const response = await api.get('/results/download/school-summary-stats', {
+    params,
+    responseType: 'blob'
+  });
+  return response.data;
+};
+
+// ===== STUDENT SUBJECTS (MARKS) APIs =====
+
+// List Student Subjects
+export const getStudentSubjects = async (params?: any) => {
+  const response = await api.get('/student/subjects/', { params });
+  return response.data;
+};
+
+// Update Student Subject
+export const updateStudentSubject = async (subjectId: string, subjectData: any) => {
+  const response = await api.patch(`/student/subjects/${subjectId}`, subjectData);
+  return response.data;
+};
+
+// Export Student Subjects to Excel
+export const exportStudentSubjects = async (params: any) => {
+  const response = await api.get('/student/subjects/export/excel', {
+    params,
+    responseType: 'blob'
+  });
+  return response.data;
+};
+
+// Export Multiple Student Subjects to Excel (ZIP)
+export const exportStudentSubjectsMultiple = async (examId: string, params?: any) => {
+  const response = await api.get('/student/subjects/export/excel/multiple', {
+    params: { exam_id: examId, ...params },
+    responseType: 'blob'
+  });
+  return response.data;
+};
+
+// Import Marks from Excel (Single)
+export const importMarks = async (file: File, examId: string, options?: any) => {
+  const formData = new FormData();
+  formData.append('file', file);
+  formData.append('exam_id', examId);
+  if (options?.upload_nulls) formData.append('upload_nulls', options.upload_nulls.toString());
+  if (options?.use_student_id) formData.append('use_student_id', options.use_student_id.toString());
+
+  const response = await api.post('/student/subjects/import/marks', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' }
+  });
+  return response.data;
+};
+
+// Import Marks from Multiple Excel Files
+export const importMarksMultiple = async (files: File[], examId: string, options?: any) => {
+  const formData = new FormData();
+  files.forEach(file => formData.append('files', file));
+  formData.append('exam_id', examId);
+  if (options?.upload_nulls) formData.append('upload_nulls', options.upload_nulls.toString());
+  if (options?.use_student_id) formData.append('use_student_id', options.use_student_id.toString());
+
+  const response = await api.post('/student/subjects/import/marks/multiple', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' }
+  });
+  return response.data;
+};
+
+// Import Marks from ZIP File
+export const importMarksZIP = async (zipFile: File, examId: string, options?: any) => {
+  const formData = new FormData();
+  formData.append('zip_file', zipFile);
+  formData.append('exam_id', examId);
+  if (options?.upload_nulls) formData.append('upload_nulls', options.upload_nulls.toString());
+  if (options?.use_student_id) formData.append('use_student_id', options.use_student_id.toString());
+
+  const response = await api.post('/student/subjects/import/marks/zip', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' }
+  });
+  return response.data;
+};
+
+// Process Subject Data
+export const processSubjectData = async (examId: string) => {
+  const response = await api.post(`/student/subjects/process/subject/${examId}`);
+  return response.data;
+};
+
+// ===== SCHOOLS APIs =====
+
+// Upload School PDF (Single)
+export const uploadSchoolPDF = async (file: File, examId?: string) => {
+  const formData = new FormData();
+  formData.append('file', file);
+  if (examId) formData.append('exam_id', examId);
+
+  const response = await api.post('/schools/upload/pdf', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' }
+  });
+  return response.data;
+};
+
+// Upload School PDFs (Bulk)
+export const uploadSchoolPDFsBulk = async (files: File[], examId?: string) => {
+  const formData = new FormData();
+  files.forEach(file => formData.append('files', file));
+  if (examId) formData.append('exam_id', examId);
+
+  const response = await api.post('/schools/upload/bulk-pdf', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' }
+  });
+  return response.data;
+};
+
+// Upload School PDFs (ZIP)
+export const uploadSchoolPDFsZIP = async (zipFile: File, examId?: string) => {
+  const formData = new FormData();
+  formData.append('zip_file', zipFile);
+  if (examId) formData.append('exam_id', examId);
+
+  const response = await api.post('/schools/upload/zip', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' }
+  });
+  return response.data;
+};
+
+// Search Schools
+export const searchSchools = async (searchTerm: string, params?: any) => {
+  const response = await api.get('/schools/search', {
+    params: { search_term: searchTerm, ...params }
+  });
+  return response.data;
+};
+
+// ===== ISAL APIs =====
+
+// Generate Attendance PDF
+export const generateAttendancePDF = async (params?: any) => {
+  const response = await api.get('/isals/generate-attendance-pdf', {
+    params,
+    responseType: 'blob'
+  });
   return response.data;
 };
 

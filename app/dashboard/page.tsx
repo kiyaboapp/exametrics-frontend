@@ -24,6 +24,7 @@ import {
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { formatNumber } from '@/lib/utils';
+import ExamSelectionPane from '@/components/ExamSelectionPane';
 
 const DashboardPage = () => {
   const { user } = useAuth();
@@ -80,59 +81,24 @@ const DashboardPage = () => {
       <DashboardLayout>
         <div className="space-y-6">
           {/* Welcome Section */}
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
-              <h1 className="text-3xl font-bold text-foreground">
+              <h1 className="text-2xl sm:text-3xl font-bold text-foreground">
                 Welcome back, {user?.first_name}!
               </h1>
-              <p className="text-muted-foreground mt-1">
+              <p className="text-muted-foreground mt-1 text-sm sm:text-base">
                 Here's what's happening with your exams today.
               </p>
             </div>
             {selectedExam && (
-              <Badge variant="secondary" className="text-sm px-3 py-1">
+              <Badge variant="secondary" className="text-sm px-3 py-1 w-fit">
                 {selectedExam.exam_level}
               </Badge>
             )}
           </div>
 
           {!selectedExam ? (
-            <Card className="border-dashed">
-              <CardHeader className="text-center">
-                <BarChart3 className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                <CardTitle className="text-xl">Select an Exam to Get Started</CardTitle>
-                <CardDescription>
-                  Choose an exam from the dropdown above to view detailed statistics and analytics.
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                  {exams.slice(0, 6).map((exam) => (
-                    <Button
-                      key={exam.exam_id}
-                      variant="outline"
-                      className="h-auto p-4 flex flex-col items-start"
-                      onClick={() => setSelectedExam(exam)}
-                    >
-                      <div className="flex items-center gap-2 mb-2">
-                        <BookOpen className="h-4 w-4" />
-                        <span className="font-medium">{exam.exam_name}</span>
-                      </div>
-                      <div className="text-xs text-muted-foreground space-y-1">
-                        <div className="flex items-center gap-1">
-                          <Calendar className="h-3 w-3" />
-                          {new Date(exam.start_date).toLocaleDateString()}
-                        </div>
-                        <div className="flex items-center gap-1">
-                          <MapPin className="h-3 w-3" />
-                          {exam.exam_level}
-                        </div>
-                      </div>
-                    </Button>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
+            <ExamSelectionPane onSelect={(exam) => setSelectedExam(exam)} />
           ) : (
             <>
               {isLoading ? (

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
@@ -29,13 +29,54 @@ import {
   Award,
   Download,
   Database,
+  ChevronDown,
+  ChevronRight,
+  Upload,
+  FileCheck,
+  FileSpreadsheet,
+  FileBarChart,
+  ClipboardList,
+  Calculator,
+  BookOpen,
+  Building2,
+  UserCheck,
+  Layers,
+  FolderTree,
+  History,
+  FileSearch,
+  CheckCircle2,
+  PlayCircle,
+  FileDown,
+  FileUp,
+  Archive,
+  PieChart,
+  Target,
+  Globe,
+  BookMarked,
+  Shield,
+  KeyRound,
 } from 'lucide-react';
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
 }
 
-const navigation = [
+interface NavItem {
+  id: string;
+  label: string;
+  href: string;
+  icon: React.ComponentType<{ className?: string }>;
+  description?: string;
+  badge?: string | number | null;
+  children?: NavItem[];
+}
+
+interface NavSection {
+  title: string;
+  items: NavItem[];
+}
+
+const navigation: NavSection[] = [
   {
     title: 'Main',
     items: [
@@ -45,23 +86,265 @@ const navigation = [
         href: '/dashboard',
         icon: Home,
         description: 'Overview and statistics',
-        badge: null,
       },
+    ],
+  },
+  {
+    title: 'Exams',
+    items: [
       {
-        id: 'exams',
-        label: 'Exams',
+        id: 'exams-overview',
+        label: 'Exams Overview',
         href: '/dashboard/exams',
         icon: FileText,
-        description: 'Manage examinations',
-        badge: null,
+        description: 'View all exams',
       },
       {
-        id: 'results',
-        label: 'Results',
+        id: 'exams-create',
+        label: 'Create Exam',
+        href: '/dashboard/exams/create',
+        icon: FileCheck,
+        description: 'Create new examination',
+      },
+      {
+        id: 'exams-registration',
+        label: 'Registration Statistics',
+        href: '/dashboard/exams/registration-stats',
+        icon: BarChart3,
+        description: 'View registration data',
+      },
+      {
+        id: 'exams-settings',
+        label: 'Exam Settings',
+        href: '/dashboard/exams/settings',
+        icon: Settings,
+        description: 'Configure exam settings',
+      },
+    ],
+  },
+  {
+    title: 'Results & Processing',
+    items: [
+      {
+        id: 'results-overview',
+        label: 'Results Overview',
         href: '/dashboard/results',
         icon: Award,
-        description: 'View results and analysis',
-        badge: null,
+        description: 'View all results',
+      },
+      {
+        id: 'results-complete',
+        label: 'Complete Processing',
+        href: '/dashboard/results/complete',
+        icon: CheckCircle2,
+        description: 'Process complete results',
+      },
+      {
+        id: 'results-analysis',
+        label: 'School Analysis',
+        href: '/dashboard/results/analysis',
+        icon: PieChart,
+        description: 'School performance analysis',
+      },
+      {
+        id: 'results-progress',
+        label: 'Upload Progress',
+        href: '/dashboard/results/progress',
+        icon: ClipboardList,
+        description: 'Track marks upload progress',
+      },
+      {
+        id: 'results-rankings',
+        label: 'Rankings',
+        href: '/dashboard/results/rankings',
+        icon: Target,
+        description: 'View school rankings',
+      },
+    ],
+  },
+  {
+    title: 'Marks Management',
+    items: [
+      {
+        id: 'marks-upload',
+        label: 'Upload Marks',
+        href: '/dashboard/marks/upload',
+        icon: FileUp,
+        description: 'Upload marks (Excel/ZIP)',
+        children: [
+          {
+            id: 'marks-upload-single',
+            label: 'Single File',
+            href: '/dashboard/marks/upload/single',
+            icon: FileSpreadsheet,
+          },
+          {
+            id: 'marks-upload-multiple',
+            label: 'Multiple Files',
+            href: '/dashboard/marks/upload/multiple',
+            icon: Archive,
+          },
+          {
+            id: 'marks-upload-zip',
+            label: 'ZIP Archive',
+            href: '/dashboard/marks/upload/zip',
+            icon: Archive,
+          },
+        ],
+      },
+      {
+        id: 'marks-export',
+        label: 'Export Marks',
+        href: '/dashboard/marks/export',
+        icon: FileDown,
+        description: 'Export marks to Excel',
+        children: [
+          {
+            id: 'marks-export-single',
+            label: 'Single School',
+            href: '/dashboard/marks/export/single',
+            icon: FileSpreadsheet,
+          },
+          {
+            id: 'marks-export-multiple',
+            label: 'Multiple Schools',
+            href: '/dashboard/marks/export/multiple',
+            icon: Archive,
+          },
+        ],
+      },
+      {
+        id: 'marks-process',
+        label: 'Process Subject Data',
+        href: '/dashboard/marks/process',
+        icon: Calculator,
+        description: 'Process and calculate marks',
+      },
+      {
+        id: 'marks-manage',
+        label: 'Manage Marks',
+        href: '/dashboard/marks/manage',
+        icon: Database,
+        description: 'View and edit marks',
+      },
+    ],
+  },
+  {
+    title: 'Schools',
+    items: [
+      {
+        id: 'schools-overview',
+        label: 'Schools List',
+        href: '/dashboard/schools',
+        icon: School,
+        description: 'View all schools',
+      },
+      {
+        id: 'schools-upload',
+        label: 'Upload Schools',
+        href: '/dashboard/schools/upload',
+        icon: Upload,
+        description: 'Upload school data',
+        children: [
+          {
+            id: 'schools-upload-pdf',
+            label: 'PDF Upload',
+            href: '/dashboard/schools/upload/pdf',
+            icon: FileText,
+          },
+          {
+            id: 'schools-upload-bulk',
+            label: 'Bulk PDF Upload',
+            href: '/dashboard/schools/upload/bulk',
+            icon: Archive,
+          },
+          {
+            id: 'schools-upload-zip',
+            label: 'ZIP Upload',
+            href: '/dashboard/schools/upload/zip',
+            icon: Archive,
+          },
+        ],
+      },
+      {
+        id: 'schools-search',
+        label: 'Search Schools',
+        href: '/dashboard/schools/search',
+        icon: FileSearch,
+        description: 'Search by name or centre',
+      },
+      {
+        id: 'schools-manage',
+        label: 'Manage Schools',
+        href: '/dashboard/schools/manage',
+        icon: Building2,
+        description: 'Edit school information',
+      },
+    ],
+  },
+  {
+    title: 'Reports & Downloads',
+    items: [
+      {
+        id: 'reports-pdf',
+        label: 'Generate PDFs',
+        href: '/dashboard/reports/pdf',
+        icon: FileText,
+        description: 'Generate result PDFs',
+        children: [
+          {
+            id: 'reports-pdf-single',
+            label: 'Single School PDF',
+            href: '/dashboard/reports/pdf/single',
+            icon: FileText,
+          },
+          {
+            id: 'reports-pdf-bulk',
+            label: 'Bulk PDFs (ZIP)',
+            href: '/dashboard/reports/pdf/bulk',
+            icon: Archive,
+          },
+          {
+            id: 'reports-pdf-save-all',
+            label: 'Save All Documents',
+            href: '/dashboard/reports/pdf/save-all',
+            icon: FolderTree,
+          },
+        ],
+      },
+      {
+        id: 'reports-downloads',
+        label: 'Download Data',
+        href: '/dashboard/reports/downloads',
+        icon: Download,
+        description: 'Download reports and data',
+        children: [
+          {
+            id: 'reports-download-raw',
+            label: 'Raw Data Export',
+            href: '/dashboard/reports/downloads/raw',
+            icon: FileSpreadsheet,
+          },
+          {
+            id: 'reports-download-stats',
+            label: 'Subject Statistics',
+            href: '/dashboard/reports/downloads/stats',
+            icon: FileBarChart,
+          },
+          {
+            id: 'reports-download-summary',
+            label: 'Summary Statistics',
+            href: '/dashboard/reports/downloads/summary',
+            icon: BarChart3,
+          },
+        ],
+      },
+      {
+        id: 'reports-isal',
+        label: 'ISAL Generation',
+        href: '/dashboard/reports/isal',
+        icon: ClipboardList,
+        description: 'Individual Student Attendance Lists',
       },
     ],
   },
@@ -69,28 +352,71 @@ const navigation = [
     title: 'Analytics',
     items: [
       {
-        id: 'analytics',
-        label: 'Analytics',
+        id: 'analytics-overview',
+        label: 'Analytics Dashboard',
         href: '/dashboard/analytics',
         icon: TrendingUp,
         description: 'Performance analytics',
-        badge: null,
       },
       {
-        id: 'schools',
-        label: 'Schools',
-        href: '/dashboard/schools',
-        icon: School,
-        description: 'School management',
-        badge: null,
+        id: 'analytics-school',
+        label: 'School Analysis',
+        href: '/dashboard/analytics/school',
+        icon: PieChart,
+        description: 'Detailed school analysis',
+        children: [
+          {
+            id: 'analytics-school-full',
+            label: 'Full Analysis',
+            href: '/dashboard/analytics/school/full',
+            icon: BarChart3,
+          },
+          {
+            id: 'analytics-school-ranking',
+            label: 'Rankings',
+            href: '/dashboard/analytics/school/ranking',
+            icon: Target,
+          },
+          {
+            id: 'analytics-school-subjects',
+            label: 'Subject GPAs',
+            href: '/dashboard/analytics/school/subjects',
+            icon: BookOpen,
+          },
+          {
+            id: 'analytics-school-divisions',
+            label: 'Division Summary',
+            href: '/dashboard/analytics/school/divisions',
+            icon: Layers,
+          },
+          {
+            id: 'analytics-school-grades',
+            label: 'Grade Summary',
+            href: '/dashboard/analytics/school/grades',
+            icon: Award,
+          },
+        ],
       },
       {
-        id: 'students',
-        label: 'Students',
-        href: '/dashboard/students',
-        icon: Users,
-        description: 'Student records',
-        badge: null,
+        id: 'analytics-location',
+        label: 'Location Analysis',
+        href: '/dashboard/analytics/location',
+        icon: Globe,
+        description: 'Regional performance analysis',
+      },
+      {
+        id: 'analytics-subject',
+        label: 'Subject Rankings',
+        href: '/dashboard/analytics/subject',
+        icon: BookMarked,
+        description: 'Subject-wise rankings',
+      },
+      {
+        id: 'analytics-exam-stats',
+        label: 'Exam Statistics',
+        href: '/dashboard/analytics/exam-stats',
+        icon: BarChart3,
+        description: 'Overall exam statistics',
       },
     ],
   },
@@ -98,35 +424,167 @@ const navigation = [
     title: 'Administration',
     items: [
       {
-        id: 'locations',
+        id: 'admin-users',
+        label: 'User Management',
+        href: '/dashboard/admin/users',
+        icon: Users,
+        description: 'Manage system users',
+      },
+      {
+        id: 'admin-user-exams',
+        label: 'User Exam Assignments',
+        href: '/dashboard/admin/user-exams',
+        icon: UserCheck,
+        description: 'Assign exams to users',
+      },
+      {
+        id: 'admin-locations',
         label: 'Locations',
-        href: '/dashboard/locations',
+        href: '/dashboard/admin/locations',
         icon: MapPin,
-        description: 'Region/Council/Ward',
-        badge: null,
+        description: 'Manage regions/councils/wards',
+        children: [
+          {
+            id: 'admin-locations-regions',
+            label: 'Regions',
+            href: '/dashboard/admin/locations/regions',
+            icon: Globe,
+          },
+          {
+            id: 'admin-locations-councils',
+            label: 'Councils',
+            href: '/dashboard/admin/locations/councils',
+            icon: Building2,
+          },
+          {
+            id: 'admin-locations-wards',
+            label: 'Wards',
+            href: '/dashboard/admin/locations/wards',
+            icon: MapPin,
+          },
+        ],
       },
       {
-        id: 'reports',
-        label: 'Downloads',
-        href: '/dashboard/downloads',
-        icon: Download,
-        description: 'Download PDFs and exports',
-        badge: null,
+        id: 'admin-subjects',
+        label: 'Subjects',
+        href: '/dashboard/admin/subjects',
+        icon: BookOpen,
+        description: 'Manage subjects',
       },
       {
-        id: 'settings',
-        label: 'Settings',
-        href: '/dashboard/settings',
+        id: 'admin-exam-boards',
+        label: 'Exam Boards',
+        href: '/dashboard/admin/exam-boards',
+        icon: Shield,
+        description: 'Manage examination boards',
+      },
+      {
+        id: 'admin-upload-trails',
+        label: 'Upload History',
+        href: '/dashboard/admin/upload-trails',
+        icon: History,
+        description: 'View upload trails',
+      },
+      {
+        id: 'admin-settings',
+        label: 'System Settings',
+        href: '/dashboard/admin/settings',
         icon: Settings,
-        description: 'System settings',
-        badge: null,
+        description: 'System configuration',
       },
     ],
   },
 ];
 
+interface NavItemComponentProps {
+  item: NavItem;
+  isActive: (href: string) => boolean;
+  isExpanded: boolean;
+  onToggle: () => void;
+  onNavigate: () => void;
+  level?: number;
+}
+
+function NavItemComponent({ item, isActive, isExpanded, onToggle, onNavigate, level = 0 }: NavItemComponentProps) {
+  const hasChildren = item.children && item.children.length > 0;
+  const active = isActive(item.href);
+  const isChild = level > 0;
+
+  return (
+    <div>
+      <div
+        className={cn(
+          'flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
+          !isChild && 'hover:bg-accent hover:text-accent-foreground',
+          active && !isChild && 'bg-accent text-accent-foreground',
+          isChild && 'pl-8 text-xs text-muted-foreground hover:text-foreground',
+          active && isChild && 'text-foreground font-medium'
+        )}
+      >
+        {hasChildren ? (
+          <button
+            onClick={onToggle}
+            className="flex flex-1 items-center gap-3 text-left"
+          >
+            <item.icon className={cn('h-4 w-4 shrink-0', isChild && 'h-3 w-3')} />
+            <div className="flex-1 min-w-0">
+              <div className="truncate">{item.label}</div>
+              {item.description && !isChild && (
+                <div className="text-xs text-muted-foreground truncate">{item.description}</div>
+              )}
+            </div>
+            {hasChildren && (
+              <ChevronDown
+                className={cn(
+                  'h-4 w-4 shrink-0 transition-transform',
+                  !isExpanded && '-rotate-90'
+                )}
+              />
+            )}
+          </button>
+        ) : (
+          <Link
+            href={item.href}
+            onClick={onNavigate}
+            className="flex flex-1 items-center gap-3"
+          >
+            <item.icon className={cn('h-4 w-4 shrink-0', isChild && 'h-3 w-3')} />
+            <div className="flex-1 min-w-0">
+              <div className="truncate">{item.label}</div>
+              {item.description && !isChild && (
+                <div className="text-xs text-muted-foreground truncate">{item.description}</div>
+              )}
+            </div>
+            {item.badge && (
+              <Badge variant="secondary" className="ml-auto shrink-0">
+                {item.badge}
+              </Badge>
+            )}
+          </Link>
+        )}
+      </div>
+      {hasChildren && isExpanded && (
+        <div className="ml-4 mt-1 space-y-1 border-l pl-2">
+          {item.children.map((child) => (
+            <NavItemComponent
+              key={child.id}
+              item={child}
+              isActive={isActive}
+              isExpanded={false}
+              onToggle={() => {}}
+              onNavigate={onNavigate}
+              level={level + 1}
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export function DashboardLayout({ children }: DashboardLayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set());
   const pathname = usePathname();
   const { user, logout } = useAuth();
   const { selectedExam } = useExam();
@@ -139,7 +597,45 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
     }
   };
 
-  const isActive = (href: string) => pathname === href;
+  const isActive = (href: string) => {
+    if (pathname === href) return true;
+    if (pathname.startsWith(href + '/')) return true;
+    return false;
+  };
+
+  // Auto-expand parent items when child is active
+  useEffect(() => {
+    const shouldBeExpanded = (item: NavItem): boolean => {
+      if (!item.children) return false;
+      return item.children.some((child) => isActive(child.href));
+    };
+
+    const expanded = new Set<string>();
+    navigation.forEach((section) => {
+      section.items.forEach((item) => {
+        if (shouldBeExpanded(item)) {
+          expanded.add(item.id);
+        }
+      });
+    });
+    setExpandedItems(expanded);
+  }, [pathname]);
+
+  const toggleExpanded = (itemId: string) => {
+    setExpandedItems((prev) => {
+      const next = new Set(prev);
+      if (next.has(itemId)) {
+        next.delete(itemId);
+      } else {
+        next.add(itemId);
+      }
+      return next;
+    });
+  };
+
+  const handleNavigate = () => {
+    setSidebarOpen(false);
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -165,26 +661,14 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                   </h3>
                   <div className="space-y-1">
                     {section.items.map((item) => (
-                      <Link
+                      <NavItemComponent
                         key={item.id}
-                        href={item.href}
-                        onClick={() => setSidebarOpen(false)}
-                        className={cn(
-                          'flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground',
-                          isActive(item.href) && 'bg-accent text-accent-foreground'
-                        )}
-                      >
-                        <item.icon className="h-4 w-4" />
-                        <div className="flex-1">
-                          <div>{item.label}</div>
-                          <div className="text-xs text-muted-foreground">{item.description}</div>
-                        </div>
-                        {item.badge && (
-                          <Badge variant="secondary" className="ml-auto">
-                            {item.badge}
-                          </Badge>
-                        )}
-                      </Link>
+                        item={item}
+                        isActive={isActive}
+                        isExpanded={expandedItems.has(item.id)}
+                        onToggle={() => toggleExpanded(item.id)}
+                        onNavigate={handleNavigate}
+                      />
                     ))}
                   </div>
                 </div>
@@ -233,24 +717,13 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                   <ul role="list" className="space-y-1">
                     {section.items.map((item) => (
                       <li key={item.id}>
-                        <Link
-                          href={item.href}
-                          className={cn(
-                            'flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground',
-                            isActive(item.href) && 'bg-accent text-accent-foreground'
-                          )}
-                        >
-                          <item.icon className="h-4 w-4 shrink-0" />
-                          <div className="flex-1 min-w-0">
-                            <div className="truncate">{item.label}</div>
-                            <div className="text-xs text-muted-foreground truncate">{item.description}</div>
-                          </div>
-                          {item.badge && (
-                            <Badge variant="secondary" className="ml-auto shrink-0">
-                              {item.badge}
-                            </Badge>
-                          )}
-                        </Link>
+                        <NavItemComponent
+                          item={item}
+                          isActive={isActive}
+                          isExpanded={expandedItems.has(item.id)}
+                          onToggle={() => toggleExpanded(item.id)}
+                          onNavigate={handleNavigate}
+                        />
                       </li>
                     ))}
                   </ul>

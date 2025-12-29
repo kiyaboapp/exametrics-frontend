@@ -1,5 +1,17 @@
 # Exametrics Frontend
 
+#BACKEND README
+"C:\Users\droge\OneDrive\Desktop\HANDLER\DJANGO\exametrics\README.md"
+
+#BACKEND API DOCUMENTATION
+"C:\Users\droge\OneDrive\Desktop\HANDLER\DJANGO\exametrics\API_DOCUMENTATION.md"
+
+
+#never plot any graph with GPA
+
+GPA should have 4 decimal places
+Also where necsssaty have graphs,charts etc where neccssary and otehr statistical visuals
+
 Frontend for **Exametrics** — a dashboard for exam management, analytics, rankings, and downloadable reports.
 
 This app is built with the **Next.js App Router** and integrates with the Exametrics **FastAPI** backend.

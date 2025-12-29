@@ -404,11 +404,15 @@ export default function ResultsPage() {
                       <div className="mt-4 pt-4 border-t">
                         <p className="text-sm font-medium text-gray-700 mb-2">Division Distribution</p>
                         <div className="flex gap-2 flex-wrap">
-                          {Object.entries(school.division_summary.divisions || {}).map(([div, counts]) => (
-                            <Badge key={div} variant="outline">
-                              Div {div}: {formatNumber((counts as { F: number; M: number; T: number })?.T || 0)}
-                            </Badge>
-                          ))}
+                          {Object.entries(school.division_summary.divisions || {}).map(([div, counts]) => {
+                            const divisionData = counts as { F?: number; M?: number; T?: number };
+                            const total = divisionData?.T ?? (divisionData?.M || 0) + (divisionData?.F || 0);
+                            return (
+                              <Badge key={div} variant="outline">
+                                Div {div}: {formatNumber(total)}
+                              </Badge>
+                            );
+                          })}
                         </div>
                       </div>
                     )}
@@ -609,16 +613,19 @@ export default function ResultsPage() {
                           <CardContent>
                             <div className="space-y-4">
                               {Object.entries(schoolAnalysis.division_summary.divisions || {}).map(([div, counts]) => {
-                                const data = (counts as { F: number; M: number; T: number });
+                                const divisionData = counts as { F?: number; M?: number; T?: number };
+                                const total = divisionData?.T ?? (divisionData?.M || 0) + (divisionData?.F || 0);
+                                const male = divisionData?.M || 0;
+                                const female = divisionData?.F || 0;
                                 return (
                                   <div key={div} className="flex items-center justify-between p-3 border rounded-lg">
                                     <div className="flex items-center gap-4">
                                       <Badge variant="outline">Division {div}</Badge>
                                       <span className="text-sm text-gray-600">
-                                        Male: {formatNumber(data.M)} • Female: {formatNumber(data.F)}
+                                        Male: {formatNumber(male)} • Female: {formatNumber(female)}
                                       </span>
                                     </div>
-                                    <Badge className="text-lg">{formatNumber(data.T)}</Badge>
+                                    <Badge className="text-lg">{formatNumber(total)}</Badge>
                                   </div>
                                 );
                               })}

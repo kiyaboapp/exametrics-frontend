@@ -214,20 +214,26 @@ export default function SchoolsPage() {
                           <CardContent>
                             <div className="space-y-4">
                               {schoolAnalysis.division_summary?.divisions &&
-                                Object.entries(schoolAnalysis.division_summary.divisions).map(([div, counts]: [string, any]) => (
-                                  <div key={div} className="flex items-center justify-between">
-                                    <div className="flex items-center space-x-3">
-                                      <Badge className={getDivisionColor(div)}>Division {div}</Badge>
-                                      <span className="text-sm text-gray-600">
-                                        Total: {formatNumber(counts?.T || 0)}
-                                      </span>
+                                Object.entries(schoolAnalysis.division_summary.divisions).map(([div, counts]: [string, any]) => {
+                                  const divisionData = counts as { F?: number; M?: number; T?: number };
+                                  const total = divisionData?.T ?? (divisionData?.M || 0) + (divisionData?.F || 0);
+                                  const male = divisionData?.M || 0;
+                                  const female = divisionData?.F || 0;
+                                  return (
+                                    <div key={div} className="flex items-center justify-between">
+                                      <div className="flex items-center space-x-3">
+                                        <Badge className={getDivisionColor(div)}>Division {div}</Badge>
+                                        <span className="text-sm text-gray-600">
+                                          Total: {formatNumber(total)}
+                                        </span>
+                                      </div>
+                                      <div className="flex gap-4 text-sm text-gray-600">
+                                        <span>M: {formatNumber(male)}</span>
+                                        <span>F: {formatNumber(female)}</span>
+                                      </div>
                                     </div>
-                                    <div className="flex gap-4 text-sm text-gray-600">
-                                      <span>M: {formatNumber(counts?.M || 0)}</span>
-                                      <span>F: {formatNumber(counts?.F || 0)}</span>
-                                    </div>
-                                  </div>
-                                ))}
+                                  );
+                                })}
                             </div>
                           </CardContent>
                         </Card>

@@ -13,6 +13,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
+import { useRouter } from 'next/navigation';
 import { getExams, getExamRegistrationStats, createExam, updateExam, deleteExam, reprocessExam, getBoards } from '@/lib/api';
 import { useExam } from '@/contexts/ExamContext';
 import { Calendar, MapPin, Users, School as SchoolIcon, Plus, Edit, Trash2, RefreshCw, BarChart3 } from 'lucide-react';
@@ -27,7 +28,6 @@ export default function ExamsPage() {
   const [boards, setBoards] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [statsLoading, setStatsLoading] = useState(false);
-  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [editingExam, setEditingExam] = useState<any>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -92,22 +92,6 @@ export default function ExamsPage() {
     fetchStats();
   }, [selectedExam]);
 
-  const handleCreateExam = async (e: React.FormEvent) => {
-    e.preventDefault();
-    try {
-      setIsSubmitting(true);
-      const newExam = await createExam(formData);
-      setExams([...exams, newExam]);
-      setIsCreateDialogOpen(false);
-      resetForm();
-      toast.success('Exam created successfully');
-    } catch (error) {
-      console.error('Error creating exam:', error);
-      toast.error('Failed to create exam');
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
 
   const handleUpdateExam = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -201,150 +185,10 @@ export default function ExamsPage() {
                 View and manage exam information, registration statistics, and details.
               </p>
             </div>
-            <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
-              <DialogTrigger asChild>
-                <Button>
-                  <Plus className="h-4 w-4 mr-2" />
-                  Create Exam
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="sm:max-w-[425px]">
-                <DialogHeader>
-                  <DialogTitle>Create New Exam</DialogTitle>
-                  <DialogDescription>
-                    Create a new examination. Fill in all the required details.
-                  </DialogDescription>
-                </DialogHeader>
-                <form onSubmit={handleCreateExam}>
-                  <div className="grid gap-4 py-4">
-                    <div className="grid grid-cols-4 items-center gap-4">
-                      <Label htmlFor="exam_name" className="text-right">
-                        Exam Name
-                      </Label>
-                      <Input
-                        id="exam_name"
-                        value={formData.exam_name}
-                        onChange={(e) => setFormData({ ...formData, exam_name: e.target.value })}
-                        className="col-span-3"
-                        required
-                      />
-                    </div>
-                    <div className="grid grid-cols-4 items-center gap-4">
-                      <Label htmlFor="exam_name_swahili" className="text-right">
-                        Swahili Name
-                      </Label>
-                      <Input
-                        id="exam_name_swahili"
-                        value={formData.exam_name_swahili}
-                        onChange={(e) => setFormData({ ...formData, exam_name_swahili: e.target.value })}
-                        className="col-span-3"
-                      />
-                    </div>
-                    <div className="grid grid-cols-4 items-center gap-4">
-                      <Label htmlFor="exam_level" className="text-right">
-                        Level
-                      </Label>
-                      <Select value={formData.exam_level} onValueChange={(value) => setFormData({ ...formData, exam_level: value })}>
-                        <SelectTrigger className="col-span-3">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="O_LEVEL">O Level</SelectItem>
-                          <SelectItem value="A_LEVEL">A Level</SelectItem>
-                          <SelectItem value="PRIMARY">Primary</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div className="grid grid-cols-4 items-center gap-4">
-                      <Label htmlFor="board_id" className="text-right">
-                        Board
-                      </Label>
-                      <Select value={formData.board_id} onValueChange={(value) => setFormData({ ...formData, board_id: value })}>
-                        <SelectTrigger className="col-span-3">
-                          <SelectValue placeholder="Select a board" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {boards.map((board) => (
-                            <SelectItem key={board.board_id} value={board.board_id}>
-                              {board.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div className="grid grid-cols-4 items-center gap-4">
-                      <Label htmlFor="start_date" className="text-right">
-                        Start Date
-                      </Label>
-                      <Input
-                        id="start_date"
-                        type="date"
-                        value={formData.start_date}
-                        onChange={(e) => setFormData({ ...formData, start_date: e.target.value })}
-                        className="col-span-3"
-                        required
-                      />
-                    </div>
-                    <div className="grid grid-cols-4 items-center gap-4">
-                      <Label htmlFor="end_date" className="text-right">
-                        End Date
-                      </Label>
-                      <Input
-                        id="end_date"
-                        type="date"
-                        value={formData.end_date}
-                        onChange={(e) => setFormData({ ...formData, end_date: e.target.value })}
-                        className="col-span-3"
-                        required
-                      />
-                    </div>
-                    <div className="grid grid-cols-4 items-center gap-4">
-                      <Label htmlFor="avg_style" className="text-right">
-                        Average Style
-                      </Label>
-                      <Select value={formData.avg_style} onValueChange={(value) => setFormData({ ...formData, avg_style: value })}>
-                        <SelectTrigger className="col-span-3">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="GRADE_POINT_AVERAGE">Grade Point Average</SelectItem>
-                          <SelectItem value="WEIGHTED_AVERAGE">Weighted Average</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div className="grid grid-cols-4 items-center gap-4">
-                      <Label htmlFor="ranking_style" className="text-right">
-                        Ranking Style
-                      </Label>
-                      <Select value={formData.ranking_style} onValueChange={(value) => setFormData({ ...formData, ranking_style: value })}>
-                        <SelectTrigger className="col-span-3">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="DIVISION_BASED">Division Based</SelectItem>
-                          <SelectItem value="POINTS_BASED">Points Based</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div className="grid grid-cols-4 items-center gap-4">
-                      <Label htmlFor="is_active" className="text-right">
-                        Active
-                      </Label>
-                      <Switch
-                        id="is_active"
-                        checked={formData.is_active}
-                        onCheckedChange={(checked) => setFormData({ ...formData, is_active: checked })}
-                      />
-                    </div>
-                  </div>
-                  <DialogFooter>
-                    <Button type="submit" disabled={isSubmitting}>
-                      {isSubmitting ? 'Creating...' : 'Create Exam'}
-                    </Button>
-                  </DialogFooter>
-                </form>
-              </DialogContent>
-            </Dialog>
+            <Button onClick={() => router.push('/dashboard/exams/create')}>
+              <Plus className="h-4 w-4 mr-2" />
+              Create Exam
+            </Button>
           </div>
 
           <Tabs defaultValue="list" className="space-y-4">
@@ -516,7 +360,7 @@ export default function ExamsPage() {
                       </CardHeader>
                       <CardContent>
                         <div className="text-2xl font-bold">
-                          {registrationStats.by_region?.reduce((sum: number, r: any) => sum + r.school_count, 0) || 0}
+                          {formatNumber(registrationStats.total_schools || registrationStats.by_region?.reduce((sum: number, r: any) => sum + (r.school_count || 0), 0) || 0)}
                         </div>
                         <p className="text-xs text-gray-600 mt-2">Registered schools</p>
                       </CardContent>
