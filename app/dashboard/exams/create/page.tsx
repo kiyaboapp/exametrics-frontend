@@ -28,18 +28,20 @@ export default function CreateExamPage() {
   const [formData, setFormData] = useState({
     exam_name: '',
     exam_name_swahili: '',
-    exam_level: 'O_LEVEL',
+    exam_level: 'CSEE',
     board_id: '',
     start_date: '',
     end_date: '',
-    avg_style: 'GRADE_POINT_AVERAGE',
-    ranking_style: 'DIVISION_BASED',
+    avg_style: 'SEVEN_BEST',
+    ranking_style: 'AVERAGGE_ONLY',
     is_active: true
   });
 
   const [boardFormData, setBoardFormData] = useState({
-    board_name: '',
-    board_code: ''
+    name: '',
+    location: '',
+    chairman: '',
+    secretary: ''
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -66,8 +68,8 @@ export default function CreateExamPage() {
     e.preventDefault();
 
     const newErrors: Record<string, string> = {};
-    if (!boardFormData.board_name.trim()) {
-      newErrors.board_name = 'Board name is required';
+    if (!boardFormData.name.trim()) {
+      newErrors.name = 'Board name is required';
     }
 
     setBoardErrors(newErrors);
@@ -78,13 +80,15 @@ export default function CreateExamPage() {
     try {
       setIsCreatingBoard(true);
       const newBoard = await createBoard({
-        board_name: boardFormData.board_name.trim(),
-        board_code: boardFormData.board_code.trim() || undefined
+        name: boardFormData.name.trim(),
+        location: boardFormData.location.trim() || undefined,
+        chairman: boardFormData.chairman.trim() || undefined,
+        secretary: boardFormData.secretary.trim() || undefined
       });
       
       toast.success('Exam board created successfully');
       setIsCreateBoardDialogOpen(false);
-      setBoardFormData({ board_name: '', board_code: '' });
+      setBoardFormData({ name: '', location: '', chairman: '', secretary: '' });
       setBoardErrors({});
       
       // Refresh boards list and select the new board
@@ -237,9 +241,12 @@ export default function CreateExamPage() {
                         <SelectValue placeholder="Select exam level" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="O_LEVEL">O-Level</SelectItem>
-                        <SelectItem value="A_LEVEL">A-Level</SelectItem>
-                        <SelectItem value="PRIMARY">Primary</SelectItem>
+                        <SelectItem value="FTNA">FTNA (Form Two)</SelectItem>
+                        <SelectItem value="CSEE">CSEE (Form Four)</SelectItem>
+                        <SelectItem value="ACSEE">ACSEE (Form Six)</SelectItem>
+                        <SelectItem value="PSLE">PSLE (Primary)</SelectItem>
+                        <SelectItem value="SFNA">SFNA</SelectItem>
+                        <SelectItem value="STNA">STNA</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -277,23 +284,40 @@ export default function CreateExamPage() {
                                 </Label>
                                 <Input
                                   id="board_name"
-                                  value={boardFormData.board_name}
-                                  onChange={(e) => setBoardFormData({ ...boardFormData, board_name: e.target.value })}
-                                  placeholder="e.g., National Examinations Council"
-                                  className={boardErrors.board_name ? 'border-destructive' : ''}
+                                  value={boardFormData.name}
+                                  onChange={(e) => setBoardFormData({ ...boardFormData, name: e.target.value })}
+                                  placeholder="e.g., NECTA"
+                                  className={boardErrors.name ? 'border-destructive' : ''}
                                 />
-                                {boardErrors.board_name && (
-                                  <p className="text-sm text-destructive">{boardErrors.board_name}</p>
+                                {boardErrors.name && (
+                                  <p className="text-sm text-destructive">{boardErrors.name}</p>
                                 )}
                               </div>
                               <div className="space-y-2">
-                                <Label htmlFor="board_code">Board Code (Optional)</Label>
+                                <Label htmlFor="board_location">Location (Optional)</Label>
                                 <Input
-                                  id="board_code"
-                                  value={boardFormData.board_code}
-                                  onChange={(e) => setBoardFormData({ ...boardFormData, board_code: e.target.value })}
-                                  placeholder="e.g., NECTA"
-                                  maxLength={20}
+                                  id="board_location"
+                                  value={boardFormData.location}
+                                  onChange={(e) => setBoardFormData({ ...boardFormData, location: e.target.value })}
+                                  placeholder="e.g., Dar es Salaam"
+                                />
+                              </div>
+                              <div className="space-y-2">
+                                <Label htmlFor="board_chairman">Chairman (Optional)</Label>
+                                <Input
+                                  id="board_chairman"
+                                  value={boardFormData.chairman}
+                                  onChange={(e) => setBoardFormData({ ...boardFormData, chairman: e.target.value })}
+                                  placeholder="e.g., Dr. John Doe"
+                                />
+                              </div>
+                              <div className="space-y-2">
+                                <Label htmlFor="board_secretary">Secretary (Optional)</Label>
+                                <Input
+                                  id="board_secretary"
+                                  value={boardFormData.secretary}
+                                  onChange={(e) => setBoardFormData({ ...boardFormData, secretary: e.target.value })}
+                                  placeholder="e.g., Jane Smith"
                                 />
                               </div>
                             </div>
@@ -303,7 +327,7 @@ export default function CreateExamPage() {
                                 variant="outline"
                                 onClick={() => {
                                   setIsCreateBoardDialogOpen(false);
-                                  setBoardFormData({ board_name: '', board_code: '' });
+                                  setBoardFormData({ name: '', location: '', chairman: '', secretary: '' });
                                   setBoardErrors({});
                                 }}
                                 disabled={isCreatingBoard}
@@ -343,7 +367,7 @@ export default function CreateExamPage() {
                         ) : (
                           boards.map((board) => (
                             <SelectItem key={board.board_id} value={board.board_id}>
-                              {board.board_name}
+                              {board.name}
                             </SelectItem>
                           ))
                         )}
@@ -401,8 +425,9 @@ export default function CreateExamPage() {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="GRADE_POINT_AVERAGE">Grade Point Average (GPA)</SelectItem>
-                      <SelectItem value="MEAN_SCORE">Mean Score</SelectItem>
+                      <SelectItem value="AUTO">Auto</SelectItem>
+                      <SelectItem value="SEVEN_BEST">Seven Best Subjects</SelectItem>
+                      <SelectItem value="EIGHT_BEST">Eight Best Subjects</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -418,8 +443,8 @@ export default function CreateExamPage() {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="DIVISION_BASED">Division Based</SelectItem>
-                      <SelectItem value="GRADE_BASED">Grade Based</SelectItem>
+                      <SelectItem value="AVERAGGE_ONLY">Average Only</SelectItem>
+                      <SelectItem value="SUBJECT_GPA_THEN_SUBJECT_AVERAGE">Subject GPA Then Average</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>

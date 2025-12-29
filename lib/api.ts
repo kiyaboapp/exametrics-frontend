@@ -1,21 +1,4 @@
-import axios, { AxiosError, AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
-import { 
-  LoginResponse, 
-  User, 
-  Exam, 
-  UserExam, 
-  SchoolProgress, 
-  SchoolAnalysis, 
-  ExamStatistics, 
-  ExamRegistrationStats,
-  Result,
-  Student,
-  School,
-  Region,
-  Council,
-  Ward,
-  ApiError
-} from '@/types';
+import axios, { AxiosError, AxiosInstance, AxiosResponse } from 'axios';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1';
 
@@ -23,46 +6,6 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/a
 if (typeof window !== 'undefined') {
   console.log('🔗 API Base URL:', API_BASE_URL);
   console.log('🌍 Environment:', process.env.NODE_ENV);
-}
-
-export interface User {
-  id: string;
-  username: string;
-  email: string;
-  first_name: string;
-  middle_name: string | null;
-  surname: string;
-  role: string;
-  is_active: boolean;
-  is_verified: boolean;
-  centre_number: string | null;
-  created_at: string;
-}
-
-export interface Exam {
-  exam_id: string;
-  board_id: string;
-  exam_name: string;
-  exam_name_swahili: string | null;
-  start_date: string;
-  end_date: string;
-  avg_style: string;
-  exam_level: string;
-  ranking_style: string;
-  is_active: boolean;
-}
-
-export interface UserExam {
-  exam: Exam;
-  role: string;
-  permissions: Record<string, unknown>;
-}
-
-export interface LoginResponse {
-  access_token: string;
-  token_type: string;
-  user: User;
-  user_exams: UserExam[];
 }
 
 export interface ApiError {
@@ -214,9 +157,9 @@ export const getSchoolResults = async (examId: string, centreNumber: string) => 
   return response.data;
 };
 
-// Get all schools results for an exam
+// Get all schools results for an exam - uses /exams/{exam_id}/analyses/overviews
 export const getExamResults = async (examId: string, params?: any) => {
-  const response = await api.get(`/school-analyses/exams/${examId}/analyses/overviews`, {
+  const response = await api.get(`/exams/${examId}/analyses/overviews`, {
     params: {
       limit: 100,
       sort_by: 'gpa_desc',
@@ -224,12 +167,12 @@ export const getExamResults = async (examId: string, params?: any) => {
     }
   });
   
-  // Backend returns { data: [...], pagination: {...}, total_queried: number }
-  return response.data.data || [];
+  // Backend may return paginated or direct array
+  return response.data.data || response.data.items || response.data || [];
 };
 
 export const downloadSchoolPDF = async (examId: string, centreNumber: string) => {
-  const response = await api.get(`/school-analyses/exams/${examId}/schools/${centreNumber}/analysis/full`, {
+  const response = await api.get(`/results/results/pdf/${examId}/${centreNumber}`, {
     responseType: 'blob'
   });
   return response.data;
@@ -314,13 +257,25 @@ export const reprocessExam = async (examId: string) => {
 
 // Get available examination boards
 export const getBoards = async () => {
-  const response = await api.get('/exam-boards');
+  const response = await api.get('/exam-boards/');
   return response.data;
 };
 
-// Create exam board
-export const createBoard = async (boardData: { board_name: string; board_code?: string }) => {
+// Create exam board - API expects: name, location, chairman, secretary
+export const createBoard = async (boardData: { name: string; location?: string; chairman?: string; secretary?: string }) => {
   const response = await api.post('/exam-boards/', boardData);
+  return response.data;
+};
+
+// Update exam board
+export const updateBoard = async (boardId: string, boardData: any) => {
+  const response = await api.patch(`/exam-boards/${boardId}`, boardData);
+  return response.data;
+};
+
+// Delete exam board
+export const deleteBoard = async (boardId: string) => {
+  const response = await api.delete(`/exam-boards/${boardId}`);
   return response.data;
 };
 
@@ -530,6 +485,254 @@ export const generateAttendancePDF = async (params?: any) => {
     params,
     responseType: 'blob'
   });
+  return response.data;
+};
+
+// ===== USERS APIs =====
+
+export const getUsers = async (params?: any) => {
+  const response = await api.get('/users/', { params });
+  return response.data;
+};
+
+export const getUser = async (userId: string) => {
+  const response = await api.get(`/users/${userId}`);
+  return response.data;
+};
+
+export const createUser = async (userData: any) => {
+  const response = await api.post('/users/', userData);
+  return response.data;
+};
+
+export const updateUser = async (userId: string, userData: any) => {
+  const response = await api.patch(`/users/${userId}`, userData);
+  return response.data;
+};
+
+export const deleteUser = async (userId: string) => {
+  const response = await api.delete(`/users/${userId}`);
+  return response.data;
+};
+
+// ===== USER EXAMS APIs =====
+
+export const getUserExams = async (params?: any) => {
+  const response = await api.get('/user-exams/', { params });
+  return response.data;
+};
+
+export const createUserExam = async (userExamData: any) => {
+  const response = await api.post('/user-exams/', userExamData);
+  return response.data;
+};
+
+export const updateUserExam = async (userId: string, examId: string, data: any) => {
+  const response = await api.patch(`/user-exams/${userId}/${examId}`, data);
+  return response.data;
+};
+
+export const deleteUserExam = async (userId: string, examId: string) => {
+  const response = await api.delete(`/user-exams/${userId}/${examId}`);
+  return response.data;
+};
+
+// ===== SUBJECTS APIs =====
+
+export const getSubjects = async (params?: any) => {
+  const response = await api.get('/subjects/', { params });
+  return response.data;
+};
+
+export const createSubject = async (subjectData: any) => {
+  const response = await api.post('/subjects/', subjectData);
+  return response.data;
+};
+
+export const updateSubject = async (subjectCode: string, subjectData: any) => {
+  const response = await api.patch(`/subjects/${subjectCode}`, subjectData);
+  return response.data;
+};
+
+export const deleteSubject = async (subjectCode: string) => {
+  const response = await api.delete(`/subjects/${subjectCode}`);
+  return response.data;
+};
+
+// ===== EXAM SUBJECTS APIs =====
+
+export const getExamSubjects = async (examId: string) => {
+  const response = await api.get('/exam-subjects/', { params: { exam_id: examId, limit: 100 } });
+  return response.data;
+};
+
+export const createExamSubject = async (examSubjectData: any) => {
+  const response = await api.post('/exam-subjects/', examSubjectData);
+  return response.data;
+};
+
+export const deleteExamSubject = async (examSubjectId: string) => {
+  const response = await api.delete(`/exam-subjects/${examSubjectId}`);
+  return response.data;
+};
+
+// ===== LOCATIONS APIs =====
+
+export const getRegions = async (params?: any) => {
+  const response = await api.get('/regions/', { params });
+  return response.data;
+};
+
+export const createRegion = async (regionData: any) => {
+  const response = await api.post('/regions/', regionData);
+  return response.data;
+};
+
+export const getCouncils = async (params?: any) => {
+  const response = await api.get('/councils/', { params });
+  return response.data;
+};
+
+export const createCouncil = async (councilData: any) => {
+  const response = await api.post('/councils/', councilData);
+  return response.data;
+};
+
+export const getWards = async (params?: any) => {
+  const response = await api.get('/wards/', { params });
+  return response.data;
+};
+
+export const createWard = async (wardData: any) => {
+  const response = await api.post('/wards/', wardData);
+  return response.data;
+};
+
+// ===== UPLOAD TRAILS APIs =====
+
+export const getUploadTrails = async (params?: any) => {
+  const response = await api.get('/upload-trails/', { params });
+  return response.data;
+};
+
+export const getUploadTrail = async (uploadId: string) => {
+  const response = await api.get(`/upload-trails/${uploadId}`);
+  return response.data;
+};
+
+// ===== SCHOOLS APIs (Extended) =====
+
+export const getSchools = async (params?: any) => {
+  const response = await api.get('/schools/', { params });
+  return response.data;
+};
+
+export const getSchool = async (centreNumber: string) => {
+  const response = await api.get(`/schools/${centreNumber}`);
+  return response.data;
+};
+
+export const createSchool = async (schoolData: any) => {
+  const response = await api.post('/schools/', schoolData);
+  return response.data;
+};
+
+export const updateSchool = async (centreNumber: string, schoolData: any) => {
+  const response = await api.patch(`/schools/${centreNumber}`, schoolData);
+  return response.data;
+};
+
+export const deleteSchool = async (centreNumber: string) => {
+  const response = await api.delete(`/schools/${centreNumber}`);
+  return response.data;
+};
+
+// ===== STUDENTS APIs =====
+
+export const getStudents = async (params?: any) => {
+  const response = await api.get('/students/', { params });
+  return response.data;
+};
+
+export const getStudent = async (studentGlobalId: string) => {
+  const response = await api.get(`/students/${studentGlobalId}`);
+  return response.data;
+};
+
+// ===== RESULTS APIs =====
+
+export const getResults = async (params?: any) => {
+  const response = await api.get('/results/', { params });
+  return response.data;
+};
+
+// ===== LOCATION ANALYSIS APIs =====
+
+export const getLocationAnalyses = async (examId: string, params?: any) => {
+  const response = await api.get(`/location-analysis/exam/${examId}`, { params });
+  return response.data;
+};
+
+export const getLocationAnalysis = async (analysisId: string) => {
+  const response = await api.get(`/location-analysis/${analysisId}`);
+  return response.data;
+};
+
+export const getLocationAnalysesByRegion = async (regionName: string) => {
+  const response = await api.get(`/location-analysis/region/${regionName}`);
+  return response.data;
+};
+
+// ===== SCHOOL ANALYSIS APIs =====
+
+export const getSchoolAnalyses = async (examId: string, params?: any) => {
+  const response = await api.get(`/exams/${examId}/analyses/overviews`, { params });
+  return response.data;
+};
+
+export const getSchoolAnalysisRankings = async (examId: string, params?: any) => {
+  const response = await api.get(`/exams/${examId}/analyses/rankings`, { params });
+  return response.data;
+};
+
+export const getSchoolAnalysisSubjects = async (examId: string, params?: any) => {
+  const response = await api.get(`/exams/${examId}/analyses/subjects`, { params });
+  return response.data;
+};
+
+// ===== EXAM DIVISIONS APIs =====
+
+export const getExamDivisions = async (params?: any) => {
+  const response = await api.get('/exam-divisions/', { params });
+  return response.data;
+};
+
+export const createExamDivision = async (divisionData: any) => {
+  const response = await api.post('/exam-divisions/', divisionData);
+  return response.data;
+};
+
+// ===== EXAM GRADES APIs =====
+
+export const getExamGrades = async (params?: any) => {
+  const response = await api.get('/exam-grades/', { params });
+  return response.data;
+};
+
+export const createExamGrade = async (gradeData: any) => {
+  const response = await api.post('/exam-grades/', gradeData);
+  return response.data;
+};
+
+// ===== STUDENT SUBJECT BACKUPS APIs =====
+
+export const getStudentSubjectBackups = async (params?: any) => {
+  const response = await api.get('/student-subject-backups/', { params });
+  return response.data;
+};
+
+export const getStudentSubjectBackupsByExam = async (examId: string) => {
+  const response = await api.get(`/student-subject-backups/exam/${examId}`);
   return response.data;
 };
 

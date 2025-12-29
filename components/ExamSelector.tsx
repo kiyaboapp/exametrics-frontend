@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from 'react';
 import { useExam } from '@/contexts/ExamContext';
-import { getExams, Exam } from '@/lib/api';
+import { getExams } from '@/lib/api';
+import { Exam } from '@/types';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { formatDate } from '@/lib/utils';
 import toast from 'react-hot-toast';
